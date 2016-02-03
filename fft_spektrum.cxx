@@ -9,7 +9,7 @@
 using namespace std;
 //-------------------------------
 void writeData(const fftw_complex* const f, const int N, const double L,const char* const fname);
-
+double readData(const int N, double* p,const char* const fname);
 //-------------------------------
 
 int main(int argc, char** argv){
@@ -24,33 +24,49 @@ int main(int argc, char** argv){
 
 	const int N = 16384;
 	double L;
-
+// 	double* A = new double[N];
+        fftw_complex* p = new fftw_complex[N];
+	
 	// Allocate memory
 	fftw_complex* f = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * (N/2+1));
 	double* inR  = (double*) malloc(sizeof(double)*N);
 
-  // Create plan
+	// Create plan
 	fftw_plan FW  = fftw_plan_dft_r2c_1d(N, inR, f, FFTW_ESTIMATE);
 
 	// Read input data
-
+	
 	// Call function which reads the data from
 	// the input file into the array inR
+	L = readData(N, inR, in_file);
+	cout << L;
+	
+	//cout << A[345];
+	
+	// Calculate FFT
+	fftw_execute(FW);
 
+	// write output file
+	writeData(f, N,  L, out_file);
 
-  // Calculate FFT
-  fftw_execute(FW);
-
-  // write output file
-  writeData(f, N,  L, out_file);
-
-  // Clean up
+	// Clean up
 	fftw_destroy_plan(FW);
-  fftw_free(f);
-  free(inR);
+	fftw_free(f);
+	free(inR);
 
 	return 0;
 }
+
+double readData(const int N, double* p,const char* const fname){
+    ifstream in(fname);
+    double tmp;
+    for(int i=0; i<N; i++){
+     in >> tmp;
+     in >> p[i];      
+    } 
+  return tmp; //letzter X-Wert wird zu L
+}
+
 //-------------------------------
 void writeData(const fftw_complex* const f, const int N, const double L,const char* const fname){
 	ofstream out(fname);
